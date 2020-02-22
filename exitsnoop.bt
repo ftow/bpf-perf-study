@@ -1,0 +1,29 @@
+#!/usr/bin/env bpftrace
+
+/*
+ * exitsnoop.bt: Trace process exit 
+
+ * This program is inspired by Brendan Gregg's book, BPF Performance Tools. 
+ * Also I studied exitsnoop.py by Arturo Martin-de-Nicolas.  
+ * Usage: exitsnoop.bt
+ 
+ * 2-22-2020 By DW
+*/
+
+
+#include <linux/sched.h>
+
+BEGIN
+{
+	printf("%-20s %-10s %-10s %-10s %-15s %-5s\n", "PCOMM", "PID", "PPID", "TID", "AGE(ms)", "EXIT_CODE");
+}
+
+tracepoint:sched:sched_process_exit
+{
+	$task = (struct task_struct *)curtask;
+	$start = $task->start_time;
+	$du = (nsecs - $start)/1000000;
+	$ppid = $task->real_parent->pid;
+	$exit_code = $task->real_parent->exit_code;
+	printf("%-20s %-10u %-10u %-10u %-15.1u %-5d\n", comm, pid, $ppid, tid, $du, $exit_code);
+}
