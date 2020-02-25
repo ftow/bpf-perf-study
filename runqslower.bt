@@ -1,0 +1,55 @@
+#!/usr/bin/env bpftrace
+/*
+ * runqslower.bt	Processes waiting in CPU scheduler run queue longer than 10k usecs.
+ *		For Linux, uses bpftrace, eBPF.
+ *
+ * This is a bpftrace version of the bcc tool of the same name.
+ *
+ * Reference: Brendan Gregg's runqlat.bt 
+ * 
+ * 02/24/2020	DW	Created this
+ * PID 0 excluded	
+ */
+
+#include <linux/sched.h>
+
+BEGIN
+{
+	printf("%-10s %-20s %-10s %-10s\n", "TIME", "COMM", "PID", "LAT(us)");
+}
+
+tracepoint:sched:sched_wakeup,
+tracepoint:sched:sched_wakeup_new
+{
+	if(args->pid != 0) {
+		@qtime[args->pid] = nsecs;
+	}
+}
+
+tracepoint:sched:sched_switch
+{
+	if (args->prev_state == TASK_RUNNING) {
+		if(args->prev_pid != 0) { //PID 0 excluded
+			@qtime[args->prev_pid] = nsecs;
+		}
+	}
+	
+	if(args->next_pid != 0){ //PID 0 excluded 
+		$ns = @qtime[args->next_pid];
+	}
+
+	if ($ns) {
+		$usecs = (nsecs - $ns) / 1000;
+		if ($usecs >= 10000) {
+			time("%H:%M:%S   ");
+			printf("%-20s %-10d %-10d\n", args->next_comm, args->next_pid, $usecs);
+		}
+	}
+	
+	delete(@qtime[args->next_pid]);
+}
+
+END
+{
+	clear(@qtime);
+}
