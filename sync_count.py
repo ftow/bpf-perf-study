@@ -5,7 +5,7 @@
 #
 # Written as a basic excercise.
 #
-# Copyright DW
+# Created by DW
 # Licensed under the Apache License, Version 2.0 (the "License")
 
 from __future__ import print_function
