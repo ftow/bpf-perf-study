@@ -7,7 +7,7 @@
 #
 # Created by DW
 # Licensed under the Apache License, Version 2.0 (the "License")
-# This program is my answer for lesson 5 in BCC Python Developer Tutorial 
+# This program is my answer to lesson 5 in BCC Python Developer Tutorial 
 
 from __future__ import print_function
 from bcc import BPF
