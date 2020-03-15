@@ -35,7 +35,7 @@ try:
 except KeyboardInterrupt:
     for k, v in b["table"].items():
         print("\nThere are %u sync calls\n" % (v.value))
-        # print("the key is %s" % (str(k)))
+        
 
 
 
